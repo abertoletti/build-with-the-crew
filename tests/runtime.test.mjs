@@ -4,7 +4,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
-import { invokeSpecialist, receiptFor, validModel, validateRuntimeName } from '../plugins/metodo/scripts/runtime.mjs';
+import { invokeSpecialist, receiptFor, validModel, validateRuntimeName } from '../plugins/build-with-the-crew/scripts/runtime.mjs';
 
 const fakeProgram = `
 const fs = require('node:fs');

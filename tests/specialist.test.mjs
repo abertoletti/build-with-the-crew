@@ -4,7 +4,7 @@ import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
-import { readRequest, stage, verify } from '../plugins/metodo/scripts/specialist.mjs';
+import { readRequest, stage, verify } from '../plugins/build-with-the-crew/scripts/specialist.mjs';
 
 function fixture(t, role = 'review', effort) {
   const root = mkdtempSync(join(tmpdir(), 'metodo-specialist-test-'));

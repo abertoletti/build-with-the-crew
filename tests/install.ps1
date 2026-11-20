@@ -100,7 +100,7 @@ function Test-SkillDiscovery([switch]$RunUx) {
             if ($hit.Count -ne 1) { throw "Expected one enabled cached skill for $($entry.Directory.Name), got $($hit.Count)" }
             $installedRoot = (Get-Item -LiteralPath $hit[0].path).Directory.Parent.Parent.FullName
         }
-        $sourceRoot = Join-Path $catalog 'plugins/metodo'
+        $sourceRoot = Join-Path $catalog 'plugins/build-with-the-crew'
         $files = @(Get-ChildItem -LiteralPath $sourceRoot -Recurse -File -Force)
         foreach ($file in $files) {
             $relative = [IO.Path]::GetRelativePath($sourceRoot, $file.FullName)
@@ -134,16 +134,16 @@ try {
     [IO.File]::WriteAllText((Join-Path $profilePath 'config.toml'), 'cli_auth_credentials_store = "file"')
     & git -C $project init --quiet
     if ($LASTEXITCODE -ne 0) { throw 'Cannot initialize the disposable test repository' }
-    $projectConfig = Join-Path $project '.agentic-method/config.json'
+    $projectConfig = Join-Path $project '.build-with-the-crew/config.json'
     $null = New-Item -ItemType Directory -Path (Split-Path -Parent $projectConfig)
     [IO.File]::WriteAllText($projectConfig, '{"project":"integration-fixture"}')
     $before = (Get-FileHash -LiteralPath $projectConfig).Hash
-    $skillRoot = Join-Path $catalog 'plugins/metodo/skills'
+    $skillRoot = Join-Path $catalog 'plugins/build-with-the-crew/skills'
     $expected = @(Get-ChildItem -Directory -LiteralPath $skillRoot | ForEach-Object {
         Get-Item -LiteralPath (Join-Path $_.FullName 'SKILL.md')
     })
     if (-not $expected.Count) { throw 'Plugin catalog contains no skills' }
-    $manifestPath = Join-Path $catalog 'plugins/metodo/.codex-plugin/plugin.json'
+    $manifestPath = Join-Path $catalog 'plugins/build-with-the-crew/.codex-plugin/plugin.json'
     $manifest = Get-Content -Raw -LiteralPath $manifestPath | ConvertFrom-Json
     $release = $manifest.version
     Write-Output ((Invoke-TrialCodex @('--version')).Trim())

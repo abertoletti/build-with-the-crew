@@ -27,13 +27,13 @@ The following example targets GitHub Actions and a project that authorizes merge
 
 The two integration modes are `ready` (leave the PR open) and `merge` (allow automatic merge). Both the `verify` and `merge` commands require independent approval and at least one named CI check. Initialization selects `ready` with no checks. Until you configure CI, the task can report a reviewed PR but cannot verify readiness. A `status` entry selects a classic commit status. A `check` entry selects a completed check run by exact name and optionally by producing GitHub App ID (`appId`). An ambiguous name blocks the gate. The review command fetches the PR coordinates from GitHub and reads configuration at the base commit. Fetch the base and check out the PR head locally before running it.
 
-The skill catalog is installed with the plugin. It includes Superpowers, Impeccable and specialist instructions for product analysis, architecture, code review and QA. The project can select different packaged skills per role. The first Impeccable run needs its compatible engine in cache or network access for its upstream verified download. [Pinned sources and licenses](../plugins/metodo/role-skills/sources.lock.json)
+The skill catalog is installed with the plugin. It includes Superpowers, Impeccable and specialist instructions for product analysis, architecture, code review and QA. The project can select different packaged skills per role. The first Impeccable run needs its compatible engine in cache or network access for its upstream verified download. [Pinned sources and licenses](../plugins/build-with-the-crew/role-skills/sources.lock.json)
 
-The `.agentic-method/` configuration path, `metodo/` journal and `METODO_ADAPTERS_FILE` environment variable retain their original names for compatibility.
+Upgrading a project from 0.2.0? Move its existing `.agentic-method/config.json` to `.build-with-the-crew/config.json` and commit the move to the base branch. Version 0.2.1 reads only the new path. The local task journal stays in the shared Git directory.
 
 ## Reasoning effort
 
-Set `roles.<role>.effort` in `.agentic-method/config.json`. The example above is a starting point. Omit a field to keep that runtime's existing default. Effort is a request to the model. The number of reasoning tokens actually used can vary.
+Set `roles.<role>.effort` in `.build-with-the-crew/config.json`. The example above is a starting point. Omit a field to keep that runtime's existing default. Effort is a request to the model. The number of reasoning tokens actually used can vary.
 
 | Role | Where the setting takes effect |
 | --- | --- |

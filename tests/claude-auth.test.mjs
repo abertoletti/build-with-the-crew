@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { authenticationFailedBeforeDispatch, ClaudeAuthError, requireSubscription } from '../plugins/metodo/scripts/claude-auth.mjs';
+import { authenticationFailedBeforeDispatch, ClaudeAuthError, requireSubscription } from '../plugins/build-with-the-crew/scripts/claude-auth.mjs';
 
 test('accepts both subscription modes reported by the CLI and rejects other credential sources', () => {
   for (const authMethod of ['oauth_token', 'claude.ai']) {

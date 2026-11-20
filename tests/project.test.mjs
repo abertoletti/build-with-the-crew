@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { promisify } from 'node:util';
-import { configurationPath, defaults, loadConfig, pluginRoot, resolveConfig } from '../plugins/metodo/scripts/project.mjs';
+import { configurationPath, defaults, loadConfig, pluginRoot, resolveConfig } from '../plugins/build-with-the-crew/scripts/project.mjs';
 
 const execute = promisify(execFile);
 const command = join(pluginRoot, 'scripts', 'method.mjs');
@@ -26,7 +26,8 @@ function repository(t) {
 
 test('init creates a valid portable config and preserves an existing edited file on retry', async t => {
   const { main, cli } = repository(t);
-  await cli(main, 'init', 'example/test', 'main');
+  const created = await cli(main, 'init', 'example/test', 'main');
+  assert.equal(created.path, join(main, '.build-with-the-crew', 'config.json'));
   const path = join(main, configurationPath);
   const raw = JSON.parse(readFileSync(path));
   raw.integration = 'merge';
@@ -70,7 +71,7 @@ test('role efforts are independent, optional and validated for the target runtim
 test('the base revision retains its CI policy when a proposed change relaxes it', t => {
   const { main, git } = repository(t);
   const path = join(main, configurationPath);
-  mkdirSync(join(main, '.agentic-method'));
+  mkdirSync(join(main, '.build-with-the-crew'));
   const policy = { ...defaults('example/test', 'main'), requiredChecks: [{ type: 'status', name: 'full-suite' }] };
   writeFileSync(path, JSON.stringify(policy));
   git(main, 'add', '--', configurationPath);

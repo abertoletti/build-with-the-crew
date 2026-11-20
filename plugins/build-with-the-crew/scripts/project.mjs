@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { validateEffort } from './specialist.mjs';
 import { validModel, validateRuntimeName } from './runtime.mjs';
 
-export const configurationPath = '.agentic-method/config.json';
+export const configurationPath = '.build-with-the-crew/config.json';
 export const pluginRoot = fileURLToPath(new URL('../', import.meta.url));
 const roleDefaults = {
   analyst: ['user-stories'],

@@ -4,7 +4,7 @@ import { lstatSync, readFileSync, readdirSync } from 'node:fs';
 import { join, posix, resolve } from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { defaults, pluginRoot, resolveConfig } from '../plugins/metodo/scripts/project.mjs';
+import { defaults, pluginRoot, resolveConfig } from '../plugins/build-with-the-crew/scripts/project.mjs';
 
 const distribution = fileURLToPath(new URL('../', import.meta.url));
 const bundle = join(pluginRoot, 'role-skills');

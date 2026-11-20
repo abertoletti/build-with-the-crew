@@ -61,7 +61,7 @@ test('a task worktree uses the base policy and an external reviewer through corr
     requiredChecks: [{ type: 'check', name: 'test', appId: 7 }],
     roles: { review: { model: 'fixture', effort: 'high', runtime: 'quantity-reviewer', skills: ['code-review-excellence'] } } });
   writeFileSync(config, JSON.stringify(policy));
-  git(main, 'add', '.agentic-method/config.json');
+  git(main, 'add', '.build-with-the-crew/config.json');
   git(main, 'commit', '-qm', 'Set project policy');
   const base = git(main, 'rev-parse', 'HEAD');
   cli(main, 'checkpoint', 'quantities', '0', 'assigned', brief);
@@ -82,7 +82,7 @@ test('a task worktree uses the base policy and an external reviewer through corr
   git(task, 'commit', '-qm', 'Implement ordering');
   const first = git(task, 'rev-parse', 'HEAD');
   // A local task edit must not select the provider or integration policy for its own review.
-  writeFileSync(join(task, '.agentic-method/config.json'), JSON.stringify({ ...policy, integration: 'ready',
+  writeFileSync(join(task, '.build-with-the-crew/config.json'), JSON.stringify({ ...policy, integration: 'ready',
     roles: { review: { runtime: 'unregistered', model: 'wrong-model' } } }));
 
   const pr = { state: 'open', draft: false, merged: false, base: { sha: base, ref: 'main', repo: { full_name: repository } },

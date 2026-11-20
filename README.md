@@ -28,7 +28,7 @@ By default, the crew leaves reviewed PRs open for you. If you enable automatic m
 
 ## Customize your crew
 
-Ask the coordinator to change your crew in plain language, or edit the `roles` section of `.agentic-method/config.json`. Land changes on the PR's base branch for the reviewer to use them.
+Ask the coordinator to change your crew in plain language, or edit the `roles` section of `.build-with-the-crew/config.json`. Land changes on the PR's base branch for the reviewer to use them.
 
 > Give the analyst the brainstorming skill as well as user stories. Use Sonnet at medium effort for UX and Opus at high effort for review. Keep Impeccable for UX.
 
@@ -46,7 +46,7 @@ Ask the coordinator to change your crew in plain language, or edit the `roles` s
 <details>
 <summary>See an example configuration for all eight roles</summary>
 
-Merge this `roles` object into your existing project configuration. A `skills` list replaces the defaults for that role. Omit a field to keep its default. Choose skill names from the [bundled catalog](plugins/metodo/role-skills/).
+Merge this `roles` object into your existing project configuration. A `skills` list replaces the defaults for that role. Omit a field to keep its default. Choose skill names from the [bundled catalog](plugins/build-with-the-crew/role-skills/).
 
 ```json
 {
@@ -80,7 +80,7 @@ codex plugin add build-with-the-crew@crew-tools
 
 Codex installs both workflow skills, the role skills and the supporting scripts together.
 
-If you installed the local preview, remove it with `codex plugin remove metodo@metodo-locale` after installing the new plugin, then open a fresh chat. Existing project settings and task journals are compatible.
+If you installed the local preview, remove it with `codex plugin remove metodo@metodo-locale` after installing the new plugin, then open a fresh chat. Existing task journals remain usable. For project settings, follow the [configuration upgrade instructions](docs/configuration.md).
 
 ### Authenticate Claude
 
@@ -92,7 +92,7 @@ Open a fresh Codex Desktop chat in your Git repository and ask:
 
 > Configure Build with the Crew for pull requests to main. Use this project's test commands and CI checks.
 
-Land the generated `.agentic-method/config.json` on the remote base branch before assigning the first task. For automatic merge, set `integration` to `merge` and name at least one required CI check. [Configuration and recovery](docs/configuration.md)
+The coordinator creates `.build-with-the-crew/config.json` in your project. Commit it to the remote base branch before assigning the first task. If you already configured this project with 0.2.0, move the existing settings file to this path. For automatic merge, set `integration` to `merge` and name at least one required CI check. [Configuration and recovery](docs/configuration.md)
 
 ## Test
 
@@ -110,4 +110,4 @@ Live tests use your Claude subscription quota.
 
 ## License
 
-Original code is MIT. Bundled skills retain their upstream licenses. [License](LICENSE) | [Third-party notices](plugins/metodo/role-skills/_licenses/)
+Original code is MIT. Bundled skills retain their upstream licenses. [License](LICENSE) | [Third-party notices](plugins/build-with-the-crew/role-skills/_licenses/)

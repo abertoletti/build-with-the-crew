@@ -6,8 +6,8 @@ import { copyFileSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { claudeSessionFlags, main } from '../plugins/metodo/scripts/specialist.mjs';
-import { requireSubscription } from '../plugins/metodo/scripts/claude-auth.mjs';
+import { claudeSessionFlags, main } from '../plugins/build-with-the-crew/scripts/specialist.mjs';
+import { requireSubscription } from '../plugins/build-with-the-crew/scripts/claude-auth.mjs';
 
 if (!['--live', '--corrected-only', '--read-boundary', '--ux', '--setup-token'].includes(process.argv[2])) {
   console.error('Usage: node tests/specialist-smoke.mjs --live (two reviews), --corrected-only (one review), --read-boundary (one synthetic read test), or --ux <synthetic-png> (sends that PNG to Claude).');
@@ -43,7 +43,7 @@ try {
     console.log(JSON.stringify({ readAttempted: true, deniedByRuntime: true, outsideMarkerVisible: false }));
   } else if (process.argv[2] === '--ux') {
     assert.ok(process.argv[3]?.toLowerCase().endsWith('.png'), 'Supply the path to a synthetic PNG authorized for transmission to Claude.');
-    const root = process.env.METODO_SMOKE_PLUGIN ?? fileURLToPath(new URL('../plugins/metodo/', import.meta.url));
+    const root = process.env.METODO_SMOKE_PLUGIN ?? fileURLToPath(new URL('../plugins/build-with-the-crew/', import.meta.url));
     const method = join(root, 'scripts', 'method.mjs');
     const options = { cwd, encoding: 'utf8', windowsHide: true, timeout: 16 * 60 * 1000, maxBuffer: 2 * 1024 * 1024 };
     execFileSync('git', ['init', '-q'], options);

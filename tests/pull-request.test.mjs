@@ -4,8 +4,8 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { managePull } from '../plugins/metodo/scripts/pull-request.mjs';
-import { ClaudeAuthError } from '../plugins/metodo/scripts/claude-auth.mjs';
+import { managePull } from '../plugins/build-with-the-crew/scripts/pull-request.mjs';
+import { ClaudeAuthError } from '../plugins/build-with-the-crew/scripts/claude-auth.mjs';
 
 test('an authenticated retry on the same commit can use the full review budget', t => {
   const { run, state } = fixture(t);
