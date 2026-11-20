@@ -1,0 +1,4 @@
+node_modules/
+.metodo-test-*/
+.DS_Store
+Thumbs.db

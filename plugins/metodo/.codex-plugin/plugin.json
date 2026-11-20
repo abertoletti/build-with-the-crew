@@ -1,0 +1,10 @@
+{
+  "name": "build-with-the-crew",
+  "version": "0.2.0",
+  "description": "Coordinate parallel development tasks with independent review and verified pull requests.",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Build with the Crew",
+    "shortDescription": "Run development tasks from assignment through pull request review."
+  }
+}

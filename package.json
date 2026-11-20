@@ -1,0 +1,15 @@
+{
+  "name": "build-with-the-crew",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Codex Desktop plugin for software delivery in parallel local worktrees",
+  "license": "MIT",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "test": "node tests/run.mjs",
+    "test:install": "pwsh -NoProfile -File tests/install.ps1",
+    "test:review:live": "node tests/specialist-smoke.mjs --live",
+    "test:token:live": "node tests/specialist-smoke.mjs --setup-token",
+    "test:ux:live": "pwsh -NoProfile -File tests/install.ps1 -UxScreenshot tests/fixtures/pickup.png"
+  }
+}

@@ -1,0 +1,201 @@
+{
+  "formatVersion": 1,
+  "sources": [
+    {
+      "repository": "https://github.com/pbakaus/impeccable",
+      "commit": "acb4cfe14470b1fdf51e855431af618d936b7db8",
+      "license": "Apache-2.0",
+      "notices": [
+        "_licenses/impeccable/LICENSE",
+        "_licenses/impeccable/NOTICE.md"
+      ],
+      "skills": [
+        {
+          "name": "impeccable",
+          "path": ".agents/skills/impeccable",
+          "gitTree": "2b0a11b8bc8fd914caae7d24e96bdff43f8ba1e7",
+          "files": 64,
+          "skillMdSha256": "eb54ca0b7010b3eb7d680ad9bca8e36444388ec0ed88742a104ef9efa21758ae",
+          "crlfInDistribution": [
+            "scripts/impeccable.cmd"
+          ]
+        }
+      ],
+      "tag": "skill-v4.9.1"
+    },
+    {
+      "repository": "https://github.com/obra/superpowers",
+      "commit": "22f0b463e7a5e579904dd6211a520321035526f7",
+      "license": "MIT",
+      "notices": [
+        "_licenses/superpowers/LICENSE"
+      ],
+      "skills": [
+        {
+          "name": "brainstorming",
+          "path": "skills/brainstorming",
+          "gitTree": "ebd5b1afb600976b12a4c07fedd9c408c1e82f97",
+          "files": 8,
+          "skillMdSha256": "2c9ca71f94886f9ca9f4aef055f7cafb3e1a9bdf3aeebf8f4cb547c69405d207"
+        },
+        {
+          "name": "diagnosing-superpowers",
+          "path": "skills/diagnosing-superpowers",
+          "gitTree": "effb02c345170011be4470c73b99530de43182a7",
+          "files": 20,
+          "skillMdSha256": "3143de8695c5a2d63e8b1675f33837578076f464deb127c2ebdd0b46fceef886"
+        },
+        {
+          "name": "dispatching-parallel-agents",
+          "path": "skills/dispatching-parallel-agents",
+          "gitTree": "15697cb0726c26a66bff737494e8b5266667ba0c",
+          "files": 1,
+          "skillMdSha256": "1968923066f3b707eb01d1992cdf4c42284c3855f70253b9cd5000ff45fca13c"
+        },
+        {
+          "name": "executing-plans",
+          "path": "skills/executing-plans",
+          "gitTree": "3a8438d91d9340747ffd985fdbcfe7238d6e1e57",
+          "files": 3,
+          "skillMdSha256": "deaf176fa179827e80f2ea3101db3ea90fdf562ebef340eba761e4687940f5f5"
+        },
+        {
+          "name": "finishing-a-development-branch",
+          "path": "skills/finishing-a-development-branch",
+          "gitTree": "3b1205aa5038c71946077dd63b9e71b447729e70",
+          "files": 1,
+          "skillMdSha256": "8db5a922b242dd4e1bf824cb91c13b3e8d8e8a86d6ceaf7f0774eb9cce909d65"
+        },
+        {
+          "name": "receiving-code-review",
+          "path": "skills/receiving-code-review",
+          "gitTree": "b5e154fc3ec7a6a0b1e710eebacc2168620cc428",
+          "files": 1,
+          "skillMdSha256": "091df1629510af1b92fc4abd6f96732ebedb4cb2c0f3457e8f2740b0504a2438"
+        },
+        {
+          "name": "requesting-code-review",
+          "path": "skills/requesting-code-review",
+          "gitTree": "f4a6749898702895ea4fd57c7f186cf43205b99a",
+          "files": 2,
+          "skillMdSha256": "2180e14a448e9410bec88e6646a2d1f0ce7fdd58de27388c1e052e929679d2bc"
+        },
+        {
+          "name": "subagent-driven-development",
+          "path": "skills/subagent-driven-development",
+          "gitTree": "c04a61186680d4cfc6784136d0421cd4abcfb40c",
+          "files": 15,
+          "skillMdSha256": "1baf70e307bde682c462513c86116333f1f066168c6710f45145bf5f0b00828d"
+        },
+        {
+          "name": "systematic-debugging",
+          "path": "skills/systematic-debugging",
+          "gitTree": "774f23e27e35cb0a89ede39156e7b079fbb84190",
+          "files": 6,
+          "skillMdSha256": "51c6435d98c83c42c96ba7c35725a0b2c376cd487fb1a4e6bd0ddbe7e33ef202"
+        },
+        {
+          "name": "test-driven-development",
+          "path": "skills/test-driven-development",
+          "gitTree": "847144cf0824095922c0d4875648b9fa74877e1a",
+          "files": 2,
+          "skillMdSha256": "64b03fce4aee5a97a93160cea8111f3ba13a17b7c001db4bd5836d67fd10705d"
+        },
+        {
+          "name": "using-git-worktrees",
+          "path": "skills/using-git-worktrees",
+          "gitTree": "d2b8357b922667a091bfe967840abf5ae84ce99c",
+          "files": 1,
+          "skillMdSha256": "8cfb86f121269e8f7f12361e6795c4f6738828340e28964c9229d365666c9edd"
+        },
+        {
+          "name": "using-superpowers",
+          "path": "skills/using-superpowers",
+          "gitTree": "4c777432715fe58984d212a36aedc6a18472e512",
+          "files": 8,
+          "skillMdSha256": "82c5c8866ad7f5dd4440ce66bd7806ba48a2f13771beae5cf112e53f08fe36ba"
+        },
+        {
+          "name": "verification-before-completion",
+          "path": "skills/verification-before-completion",
+          "gitTree": "a4cb0b69aaefeab540947a7f1642bdaad810e37a",
+          "files": 1,
+          "skillMdSha256": "2befe7fc55bcadaa3d97dd9e8efeb633d2561c0ebe74c5a8b17c4d9e7e4520b3"
+        },
+        {
+          "name": "writing-plans",
+          "path": "skills/writing-plans",
+          "gitTree": "cc97fa00eb2ccd4f283e34eb2ba06a48e1e679f7",
+          "files": 1,
+          "skillMdSha256": "a6c67c1900064347c2a329990dd3c555657c51c3ec53b259a08aa01a2c26139a"
+        },
+        {
+          "name": "writing-skills",
+          "path": "skills/writing-skills",
+          "gitTree": "660ede63b84ce5d07ef28cccc2973165e2ca06e2",
+          "files": 10,
+          "skillMdSha256": "8cb3ac68c6d8c4bb46886b998b09af7989643cab8bd0e46ee86dd62e64546bbe"
+        }
+      ],
+      "tag": "v7.0.2"
+    },
+    {
+      "repository": "https://github.com/wshobson/agents",
+      "commit": "42203085cfc5736204bf0f6d436dff7e1da0bf3f",
+      "license": "MIT",
+      "notices": [
+        "_licenses/agents/LICENSE"
+      ],
+      "skills": [
+        {
+          "name": "code-review-excellence",
+          "path": "plugins/developer-essentials/skills/code-review-excellence",
+          "gitTree": "eb067e9432b526fe6a13cea53be60ad6f853fced",
+          "files": 3,
+          "skillMdSha256": "1e264e04e7d2db9f4de3d34576f444650233752ba79396ea96c1f8dc8df486ea"
+        }
+      ]
+    },
+    {
+      "repository": "https://github.com/phuryn/pm-skills",
+      "commit": "9af7bfd0bc47fdad43c2eaa7a43cd13918e7aaef",
+      "license": "MIT",
+      "notices": [
+        "_licenses/pm-skills/LICENSE"
+      ],
+      "skills": [
+        {
+          "name": "user-stories",
+          "path": "pm-execution/skills/user-stories",
+          "gitTree": "75579bd44b4a9e0aefe2e4d9387093ca601be01b",
+          "files": 1,
+          "skillMdSha256": "8ce89cd81de5a3df7d504380d18c54cec6c59ccdb7fd18cbcb62b6b6183d0a55"
+        },
+        {
+          "name": "test-scenarios",
+          "path": "pm-execution/skills/test-scenarios",
+          "gitTree": "2bc166c85ef16e57ab550431551d2bb3aa7be0b7",
+          "files": 1,
+          "skillMdSha256": "2dc10ebb6359604275f26234d3c66c9ccc952e501ad5b685c23a5c0f34f634d4"
+        }
+      ]
+    },
+    {
+      "repository": "https://github.com/Jeffallan/claude-skills",
+      "commit": "67c1961b180dc92cf08983344627109e983e8f51",
+      "license": "MIT",
+      "notices": [
+        "_licenses/claude-skills/LICENSE"
+      ],
+      "skills": [
+        {
+          "name": "architecture-designer",
+          "path": "skills/architecture-designer",
+          "gitTree": "d9baa48932919d8db398cfc0953b3ec07b08356e",
+          "files": 6,
+          "skillMdSha256": "d8f3d98c54bbf35ad07e068c7ae4c9b570a3e0e51041d7669e91e8593a7655c7"
+        }
+      ]
+    }
+  ]
+}

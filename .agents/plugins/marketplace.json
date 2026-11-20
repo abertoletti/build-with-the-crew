@@ -1,0 +1,20 @@
+{
+  "name": "crew-tools",
+  "interface": {
+    "displayName": "Build with the Crew Marketplace"
+  },
+  "plugins": [
+    {
+      "name": "build-with-the-crew",
+      "source": {
+        "source": "local",
+        "path": "./plugins/metodo"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
