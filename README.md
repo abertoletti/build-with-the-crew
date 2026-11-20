@@ -1,27 +1,75 @@
 # Build with the Crew
 
-Take a task from brief to reviewed pull request with your own team of AI agents. Build with the Crew is a Codex Desktop plugin. You work with one coordinator and configure the crew once per project.
+Build with the Crew is a Codex Desktop plugin for taking tasks from a brief to a reviewed pull request. You assign work in one chat. Each task gets its own goal, Git branch and worktree, so you can keep talking to the coordinator while the crew works.
 
-> Open two task chats with separate worktrees. Add CSV export to the reports page in one, and fix the date filter in the other. Run the tests and have both changes reviewed.
+> Add CSV export to the reports page and fix the date filter. Give each change its own task chat and worktree. Run the tests and get both PRs reviewed.
 
-The coordinator gives each task its own goal, branch and working copy. You can ask how the date fix is going while the export task is still running. If the export needs a product decision, the date fix can continue independently.
+```mermaid
+flowchart TD
+    C["Your coordinator chat"]
+    C --> A["Task A · CSV export"]
+    C --> B["Task B · Date filter fix"]
+    A --> UX["UX designer checks the export flow"]
+    UX --> DA["Developer implements the export"]
+    DA --> QA["QA tests the change"]
+    QA --> RA{"Independent review"}
+    RA -->|Changes requested| DA
+    RA -->|Approved| PA["Reviewed export PR"]
+    B --> DB["Developer reproduces and fixes the bug"]
+    DB --> QB["QA runs the regression test"]
+    QB --> RB{"Independent review"}
+    RB -->|Changes requested| DB
+    RB -->|Approved| PB["Reviewed date filter PR"]
+```
 
-## How the crew works
+The diagram shows one possible crew. An analyst can clarify which report columns to export, and an architect can help decide how to handle large files. If the export needs a design decision, the date fix can continue. Ask the coordinator for progress on either task. Each task records checkpoints locally, so you can resume it after restarting Codex. For unattended work, keep Codex running and the workstation awake.
 
-1. **Define the change.** The task chat turns your brief into acceptance criteria. It brings in architecture or UX when the change calls for it. A UI task can send a screenshot to the UX specialist with the bundled Impeccable skill.
-2. **Implement and test.** The developer works in the task's worktree. QA exercises the change using the project's test commands. Each task opens its own PR, so you can follow the diff and test results separately.
-3. **Review and correct.** An independent reviewer inspects the PR diff. If it finds a defect, the task fixes the code, reruns the tests and requests another review. The previous approval cannot authorize the new commit.
-4. **Finish at the PR.** By default the task leaves the reviewed PR open for you. With automatic merge enabled, the plugin checks the approved base and head and requires every configured CI check to pass. Deployment belongs to your project's pipeline.
+By default, the crew leaves reviewed PRs open for you. If you enable automatic merge, the plugin checks that the approval still matches the PR's base and head commits and that every required CI check has passed. A change to either commit requires fresh approval.
 
-## Why use it
+## Customize your crew
 
-- **Less coordination by hand.** Give the brief once. The task chat carries the acceptance criteria, reviewer feedback and test results through corrections.
-- **A crew you can reuse.** Select skills for analysis, architecture, development, QA, UX and review. Set reasoning effort by role and choose the model and runtime for UX and review. The Claude Code adapter is built in. Other external CLIs need a compatible adapter.
-- **Work you can resume.** Each task records checkpoints locally. Keep Codex running and the workstation awake for unattended work. After a restart, ask the coordinator to resume from the recorded branch, PR and review state.
+Ask the coordinator to change your crew in plain language, or edit the `roles` section of `.agentic-method/config.json`. Land changes on the PR's base branch for the reviewer to use them.
+
+> Give the analyst the brainstorming skill as well as user stories. Use Sonnet at medium effort for UX and Opus at high effort for review. Keep Impeccable for UX.
+
+| Role in the config | Job and default skills | What you can change |
+| --- | --- | --- |
+| `coordinator` | Keeps track of tasks and brings decisions back to you. | Set `effort`, then select that level in the open Codex chat. |
+| `task` | Owns one worktree and follows its PR through tests and corrections. | Set `effort` for newly created task chats. |
+| `analyst` | Turns the brief into acceptance criteria with `user-stories`. | Choose `skills` and `effort`. |
+| `architect` | Evaluates design options and records decisions with `architecture-designer`. | Choose `skills` and `effort`. |
+| `developer` | Implements changes with `test-driven-development` and investigates failures with `systematic-debugging`. | Choose `skills` and `effort`. |
+| `qa` | Checks edge cases with `test-scenarios` and gathers evidence with `verification-before-completion`. | Choose `skills` and `effort`. |
+| `ux` | Assesses the interface from a screenshot using `impeccable`. | Choose `skills`, `effort`, `model` and `runtime`. |
+| `review` | Reviews the PR diff with `code-review-excellence` and returns approval or requests changes. | Choose `skills`, `effort`, `model` and `runtime`. |
+
+<details>
+<summary>See an example configuration for all eight roles</summary>
+
+Merge this `roles` object into your existing project configuration. A `skills` list replaces the defaults for that role. Omit a field to keep its default. Choose skill names from the [bundled catalog](plugins/metodo/role-skills/).
+
+```json
+{
+  "roles": {
+    "coordinator": { "effort": "medium" },
+    "task": { "effort": "medium" },
+    "analyst": { "skills": ["user-stories", "brainstorming"], "effort": "medium" },
+    "architect": { "skills": ["architecture-designer"], "effort": "high" },
+    "developer": { "skills": ["test-driven-development", "systematic-debugging"], "effort": "high" },
+    "qa": { "skills": ["test-scenarios", "verification-before-completion"], "effort": "medium" },
+    "ux": { "runtime": "claude-code", "model": "sonnet", "effort": "medium", "skills": ["impeccable"] },
+    "review": { "runtime": "claude-code", "model": "opus", "effort": "high", "skills": ["code-review-excellence"] }
+  }
+}
+```
+
+</details>
+
+UX and review default to Opus through the bundled Claude Code adapter. To use another provider for either role, register a local adapter for its CLI. Native specialists can use their own effort when delegated. If a role runs in the task chat, its explicit effort must match that chat's setting. If the host cannot apply the level, the task pauses that role. [Effort levels and provider adapters](docs/configuration.md#reasoning-effort)
 
 ## Install
 
-You need Codex Desktop and its CLI, Git, Node.js 22 or later, and an authenticated GitHub CLI (`gh`) for github.com. Install the Claude Code CLI and sign in with a Claude subscription to use the built-in reviewer. On Windows, put the native `claude.exe` on your PATH.
+You need Codex Desktop and its CLI, Git, Node.js 22 or later, and an authenticated GitHub CLI (`gh`) for github.com. For the built-in UX and review specialists, install the Claude Code CLI and sign in with a Claude subscription. On Windows, put the native `claude.exe` on your PATH.
 
 Run these commands once per Codex profile:
 
@@ -30,7 +78,7 @@ codex plugin marketplace add abertoletti/build-with-the-crew
 codex plugin add build-with-the-crew@crew-tools
 ```
 
-Codex installs both workflow skills, the role skills and the supporting scripts together. Node.js runs the scripts. Installation uses the Codex plugin manager directly.
+Codex installs both workflow skills, the role skills and the supporting scripts together.
 
 If you installed the local preview, remove it with `codex plugin remove metodo@metodo-locale` after installing the new plugin, then open a fresh chat. Existing project settings and task journals are compatible.
 
@@ -44,7 +92,7 @@ Open a fresh Codex Desktop chat in your Git repository and ask:
 
 > Configure Build with the Crew for pull requests to main. Use this project's test commands and CI checks.
 
-Land the generated `.agentic-method/config.json` on the remote base branch before assigning the first task. The default `ready` mode leaves reviewed PRs open. To allow automatic merge, set `integration` to `merge` and configure at least one required CI check. [Configuration and recovery](docs/configuration.md)
+Land the generated `.agentic-method/config.json` on the remote base branch before assigning the first task. For automatic merge, set `integration` to `merge` and name at least one required CI check. [Configuration and recovery](docs/configuration.md)
 
 ## Test
 
