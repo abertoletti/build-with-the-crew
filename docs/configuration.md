@@ -46,7 +46,7 @@ The common configuration levels are `low`, `medium`, `high`, `xhigh` and `max`. 
 
 ## Provider adapters
 
-The built-in runtime is `claude-code`. To use another authenticated CLI, register a trusted local wrapper that implements protocol version 1. Set the environment variable `CREW_ADAPTERS_FILE` to the absolute path of a JSON file under your control. Example for a Unix workstation:
+The built-in runtime is `claude-code`. To use another authenticated CLI, register a trusted local wrapper that implements protocol version 1. Set the environment variable `CREW_ADAPTERS_FILE` to the absolute path of a JSON file under your control. Existing adapter settings continue to work. If you set the new variable, it takes precedence. Example for a Unix workstation:
 
 ```json
 {

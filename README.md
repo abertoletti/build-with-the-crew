@@ -90,7 +90,7 @@ Open a fresh Codex Desktop chat in your Git repository and ask:
 
 > Configure Build with the Crew for pull requests to main. Use this project's test commands and CI checks.
 
-The coordinator creates `.build-with-the-crew/config.json` in your project. Commit it to the remote base branch before assigning the first task. If you already configured this project with 0.2.0, move the existing settings file to this path. For automatic merge, set `integration` to `merge` and name at least one required CI check. [Configuration and recovery](docs/configuration.md)
+The coordinator creates `.build-with-the-crew/config.json` in your project. Commit it to the remote base branch before assigning the first task. If you already configured this project with 0.2.0, move `.agentic-method/config.json` to the new path. For automatic merge, set `integration` to `merge` and name at least one required CI check. [Configuration and recovery](docs/configuration.md)
 
 ## Test
 
