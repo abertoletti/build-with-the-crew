@@ -29,7 +29,7 @@ The two integration modes are `ready` (leave the PR open) and `merge` (allow aut
 
 The skill catalog is installed with the plugin. It includes Superpowers, Impeccable and specialist instructions for product analysis, architecture, code review and QA. The project can select different packaged skills per role. The first Impeccable run needs its compatible engine in cache or network access for its upstream verified download. [Pinned sources and licenses](../plugins/build-with-the-crew/role-skills/sources.lock.json)
 
-Upgrading a project from 0.2.0? Move its existing `.agentic-method/config.json` to `.build-with-the-crew/config.json` and commit the move to the base branch. Version 0.2.1 reads only the new path. The local task journal stays in the shared Git directory.
+Upgrading a project from 0.2.0? Move its existing `.agentic-method/config.json` to `.build-with-the-crew/config.json` and commit the move to the base branch. Current versions read only the new path. The local task journal stays in the shared Git directory.
 
 ## Reasoning effort
 
@@ -46,7 +46,7 @@ The common configuration levels are `low`, `medium`, `high`, `xhigh` and `max`. 
 
 ## Provider adapters
 
-The built-in runtime is `claude-code`. To use another authenticated CLI, register a trusted local wrapper that implements protocol version 1. Set the environment variable `METODO_ADAPTERS_FILE` to the absolute path of a JSON file under your control. Example for a Unix workstation:
+The built-in runtime is `claude-code`. To use another authenticated CLI, register a trusted local wrapper that implements protocol version 1. Set the environment variable `CREW_ADAPTERS_FILE` to the absolute path of a JSON file under your control. Example for a Unix workstation:
 
 ```json
 {
@@ -66,9 +66,9 @@ The wrapper emits one JSON object on stdout with `role`, `requestedModel`, the a
 
 ## Recovery and merge checks
 
-Ask the coordinator for the path to its installed `metodo-coordinator/SKILL.md`. The plugin root is the directory containing `skills/` and `scripts/`. From your project, run `node <installed-plugin>/scripts/method.mjs --help` for the exact commands. They use the current Git repository. The coordinator and task skills normally invoke them on your behalf.
+Ask the coordinator for the path to its installed `crew-coordinator/SKILL.md`. The plugin root is the directory containing `skills/` and `scripts/`. From your project, run `node <installed-plugin>/scripts/method.mjs --help` for the exact commands. They use the current Git repository. The coordinator and task skills normally invoke them on your behalf.
 
-- `checkpoint`, `status` and `history` use task IDs and revisions. The journal lives under the repository's shared Git directory in `metodo/`. Each write publishes a complete revision. Worktrees see the same journal. If a process stops before publication, its previous revision remains readable.
+- `checkpoint`, `status` and `history` use task IDs and revisions. New journals live in `build-with-the-crew/` under the repository's shared Git directory. Existing journals continue to be used in place. Each write publishes a complete revision. Worktrees see the same journal. If a process stops before publication, its previous revision remains readable.
 - `review` binds the result to the PR base and head, the reviewer's observed model and the diff digest. A review requesting changes goes back to the developer. `maxReviewRounds` limits attempts per PR. A recognized authentication failure before dispatch records `awaiting-auth` and preserves the round. Restore credentials and retry. The same base, head and brief reuse the latest completed review when it still matches. For a terminated process, run `review-status OWNER/REPO PR`, check the task chat or local process supervisor for the reviewer process exit, then pass the numeric review journal field `revision` to `recover-review OWNER/REPO PR REVISION`. Recovery releases that attempt and retains the round it consumed. A late result cannot supersede recovery.
 - `verify` checks the matching approval and all configured CI results and re-reads the PR. `merge` also sends the verified head SHA to GitHub as a server-side precondition. After a lost response, repeat the command to inspect the server result. Enable GitHub branch rules for requirements that must apply to every client. In particular, a strictly current base or a merge queue needs server enforcement. The direct merge command respects server rejection and does not implement queue management.
 - The local journal assumes a trusted workspace and operating-system user. Treat project data sent to an external CLI as a provider transfer. Its login, permissions and quotas apply. Stop the affected task on an unverifiable review, unavailable provider or exhausted budget. Ask the coordinator for progress. It uses the task chat for details and routes decisions back to that task.

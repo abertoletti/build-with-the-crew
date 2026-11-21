@@ -27,11 +27,11 @@ console.log(JSON.stringify({role:'review',requestedModel:request.model,model:'fi
 `;
 
 test('a task worktree uses the base policy and an external reviewer through correction, QA and merge', t => {
-  const root = mkdtempSync(join(tmpdir(), 'metodo workflow '));
-  const previous = process.env.METODO_ADAPTERS_FILE;
+  const root = mkdtempSync(join(tmpdir(), 'crew workflow '));
+  const previous = process.env.CREW_ADAPTERS_FILE;
   t.after(() => {
-    if (previous === undefined) delete process.env.METODO_ADAPTERS_FILE;
-    else process.env.METODO_ADAPTERS_FILE = previous;
+    if (previous === undefined) delete process.env.CREW_ADAPTERS_FILE;
+    else process.env.CREW_ADAPTERS_FILE = previous;
     rmSync(root, { recursive: true, force: true, maxRetries: 5 });
   });
   const main = join(root, 'coordinator');
@@ -51,7 +51,7 @@ test('a task worktree uses the base policy and an external reviewer through corr
   writeFileSync(registry, JSON.stringify({ version: 1, adapters: {
     'quantity-reviewer': { command: process.execPath, args: [adapter, journal] },
   } }));
-  process.env.METODO_ADAPTERS_FILE = registry;
+  process.env.CREW_ADAPTERS_FILE = registry;
 
   const repository = 'example/quantities';
   git(main, 'init', '-q', '-b', 'main');

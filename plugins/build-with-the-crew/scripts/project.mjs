@@ -25,7 +25,10 @@ export function rootDir(cwd = process.cwd()) {
 }
 
 export function storageDir(cwd = process.cwd()) {
-  return join(git(['rev-parse', '--path-format=absolute', '--git-common-dir'], cwd), 'metodo');
+  const directory = git(['rev-parse', '--path-format=absolute', '--git-common-dir'], cwd);
+  // Keep existing journals readable in place during the branding update.
+  const legacy = join(directory, 'metodo');
+  return existsSync(legacy) ? legacy : join(directory, 'build-with-the-crew');
 }
 
 export function requireRepo(value) {

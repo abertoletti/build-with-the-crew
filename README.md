@@ -80,8 +80,6 @@ codex plugin add build-with-the-crew@crew-tools
 
 Codex installs both workflow skills, the role skills and the supporting scripts together.
 
-If you installed the local preview, remove it with `codex plugin remove metodo@metodo-locale` after installing the new plugin, then open a fresh chat. Existing task journals remain usable. For project settings, follow the [configuration upgrade instructions](docs/configuration.md).
-
 ### Authenticate Claude
 
 For interactive work, run `claude auth login`. For unattended work, run `claude setup-token` in your own terminal and supply the resulting secret as `CLAUDE_CODE_OAUTH_TOKEN` to the process launching Codex. Restart Codex if its environment changed. Keep the token in your secret manager. [Claude Code authentication](https://code.claude.com/docs/en/authentication#generate-a-long-lived-token)

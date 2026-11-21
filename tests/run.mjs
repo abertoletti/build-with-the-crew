@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 // Keep Git fixtures on the writable checkout volume, including inside a desktop sandbox.
-const temporary = mkdtempSync(join(root, '.metodo-test-'));
+const temporary = mkdtempSync(join(root, '.crew-test-'));
 try {
   const tests = readdirSync(join(root, 'tests')).filter(f => f.endsWith('.test.mjs')).sort();
   if (!tests.length) throw new Error('No offline tests found.');

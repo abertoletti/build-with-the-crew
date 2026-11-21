@@ -32,7 +32,7 @@ else process.stdout.write(JSON.stringify(result));
 `;
 
 function setup(t) {
-  const root = mkdtempSync(join(tmpdir(), 'metodo external adapter '));
+  const root = mkdtempSync(join(tmpdir(), 'crew external adapter '));
   const project = join(root, 'project under review');
   const registry = join(root, 'registered adapters.json');
   const wrapper = join(root, 'test adapter.cjs');
@@ -43,11 +43,11 @@ function setup(t) {
   function register(entry = registration) {
     writeFileSync(registry, JSON.stringify({ version: 1, adapters: { 'test-cli': entry } }));
   }
-  const previous = process.env.METODO_ADAPTERS_FILE;
-  process.env.METODO_ADAPTERS_FILE = registry;
+  const previous = process.env.CREW_ADAPTERS_FILE;
+  process.env.CREW_ADAPTERS_FILE = registry;
   t.after(() => {
-    if (previous === undefined) delete process.env.METODO_ADAPTERS_FILE;
-    else process.env.METODO_ADAPTERS_FILE = previous;
+    if (previous === undefined) delete process.env.CREW_ADAPTERS_FILE;
+    else process.env.CREW_ADAPTERS_FILE = previous;
     rmSync(root, { recursive: true, force: true, maxRetries: 4 });
   });
   mkdirSync(project);
@@ -127,8 +127,8 @@ test('invalid registry, missing skills and out-of-worktree attachments fail befo
   f.register();
   assert.throws(() => invokeSpecialist({ ...request, files: ['screen.png', '../behavior.txt'] }, 'test-cli'), /outside/i);
   assert.throws(() => invokeSpecialist({ ...request, skills: ['missing-skill'] }, 'test-cli'), /packaged skill/i);
-  process.env.METODO_ADAPTERS_FILE = './registered-adapters.json';
-  assert.throws(() => invokeSpecialist(request, 'test-cli'), /absolute METODO_ADAPTERS_FILE/i);
+  process.env.CREW_ADAPTERS_FILE = './registered-adapters.json';
+  assert.throws(() => invokeSpecialist(request, 'test-cli'), /absolute CREW_ADAPTERS_FILE/i);
   assert.deepEqual(f.records(), []);
 });
 

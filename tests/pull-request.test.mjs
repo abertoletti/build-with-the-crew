@@ -24,7 +24,7 @@ const pull = 'repos/example/app/pulls/9';
 const skills = ['code-review-excellence'];
 
 function fixture(t) {
-  const dir = mkdtempSync(join(tmpdir(), 'metodo-pr-test-'));
+  const dir = mkdtempSync(join(tmpdir(), 'crew-pr-test-'));
   t.after(() => rmSync(dir, { recursive: true, force: true, maxRetries: 5 }));
   const brief = join(dir, 'brief.txt');
   writeFileSync(brief, 'Skip duplicate notifications.');

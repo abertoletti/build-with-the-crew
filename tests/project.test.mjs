@@ -5,13 +5,13 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { promisify } from 'node:util';
-import { configurationPath, defaults, loadConfig, pluginRoot, resolveConfig } from '../plugins/build-with-the-crew/scripts/project.mjs';
+import { configurationPath, defaults, loadConfig, pluginRoot, resolveConfig, storageDir } from '../plugins/build-with-the-crew/scripts/project.mjs';
 
 const execute = promisify(execFile);
 const command = join(pluginRoot, 'scripts', 'method.mjs');
 
 function repository(t) {
-  const dir = mkdtempSync(join(tmpdir(), 'metodo-project-test-'));
+  const dir = mkdtempSync(join(tmpdir(), 'crew-project-test-'));
   t.after(() => rmSync(dir, { recursive: true, force: true, maxRetries: 5 }));
   const main = join(dir, 'main repo');
   mkdirSync(main);
@@ -81,6 +81,18 @@ test('the base revision retains its CI policy when a proposed change relaxes it'
   writeFileSync(path, JSON.stringify({ ...policy, requiredChecks: [] }));
   assert.deepEqual(loadConfig(main).requiredChecks, []);
   assert.deepEqual(loadConfig(main, base).requiredChecks, [{ type: 'status', name: 'full-suite' }]);
+});
+
+test('new journals use the English path and existing projects retain their checkpoints', async t => {
+  const { dir, main, cli } = repository(t);
+  assert.equal(storageDir(main).split(/[\\/]/).at(-1), 'build-with-the-crew');
+  mkdirSync(join(main, '.git', 'metodo'));
+  const note = join(dir, 'legacy-note.txt');
+  writeFileSync(note, 'Resume the existing task.\n');
+  await cli(main, 'checkpoint', 'preview-task', '0', 'assigned', note);
+  const legacyRecord = join(main, '.git', 'metodo', 'tasks', 'task-preview-task', '0000000001', 'record.json');
+  assert.equal(JSON.parse(readFileSync(legacyRecord)).stage, 'assigned');
+  assert.equal((await cli(main, 'status', 'preview-task')).revision, 1);
 });
 
 test('two worktrees race on a checkpoint, resume from the winner and keep other tasks independent', async t => {

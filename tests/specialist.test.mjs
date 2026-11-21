@@ -7,7 +7,7 @@ import test from 'node:test';
 import { readRequest, stage, verify } from '../plugins/build-with-the-crew/scripts/specialist.mjs';
 
 function fixture(t, role = 'review', effort) {
-  const root = mkdtempSync(join(tmpdir(), 'metodo-specialist-test-'));
+  const root = mkdtempSync(join(tmpdir(), 'crew-specialist-test-'));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   const cwd = join(root, 'project'), directory = join(root, 'isolated');
   const skill = role === 'review' ? 'code-review-excellence' : 'impeccable';
@@ -46,7 +46,7 @@ function trace(job, verdict = 'approved') {
     message: { model: child ? 'claude-opus-5-5' : 'claude-haiku-4-5', content }
   });
   const events = [
-    { type: 'system', subtype: 'init', session_id: session, mcp_servers: [], agents: [job.agent], skills: job.skills.map(s => 'metodo-local:' + s) },
+    { type: 'system', subtype: 'init', session_id: session, mcp_servers: [], agents: [job.agent], skills: job.skills.map(s => 'crew-local:' + s) },
     message('assistant', [{ type: 'tool_use', name: 'Agent', id: parent, input: { subagent_type: job.agent } }], false),
     message('assistant', [{ type: 'text', text: job.receipts.join(' ') }])
   ];
@@ -94,7 +94,7 @@ test('returns the actual child verdict, identity and digest of the full Git diff
   }
   const marked = trace(job, 'changes_requested');
   const last = marked.at(-3).message.content[0];
-  last.text = 'Detailed explanation.\nMETODO_VERDICT ' + last.text;
+  last.text = 'Detailed explanation.\nCREW_VERDICT ' + last.text;
   assert.equal(verify(marked, job).verdict, 'changes_requested');
   last.text += '\nI retract the verdict.';
   assert.throws(() => verify(marked, job), /Ambiguous/);

@@ -105,7 +105,7 @@ export function stage(request, directory, skillRoot = join(pluginRoot, 'role-ski
   const { role, cwd, baseSha, headSha, skills, model } = request;
   const plugin = join(directory, 'plugin');
   for (const p of ['plugin/.claude-plugin', 'plugin/agents', 'plugin/skills', 'inputs']) mkdirSync(join(directory, p), { recursive: true });
-  writeFileSync(join(plugin, '.claude-plugin/plugin.json'), JSON.stringify({ name: 'metodo-local', version: '0.1.0' }));
+  writeFileSync(join(plugin, '.claude-plugin/plugin.json'), JSON.stringify({ name: 'crew-local', version: '0.1.0' }));
   const receipts = [];
   for (const skill of skills) {
     const source = join(skillRoot, skill);
@@ -160,14 +160,14 @@ export function stage(request, directory, skillRoot = join(pluginRoot, 'role-ski
       addText('Attachment: ' + basename(p), readFileSync(p));
     }
   }
-  const agent = 'metodo-local:' + role;
+  const agent = 'crew-local:' + role;
   const output = role === 'review'
-    ? 'Finish your final response with a single line beginning METODO_VERDICT followed by a space and one valid, compact JSON object. The object must contain headSha, verdict (approved or changes_requested) and summary (a substantive string including findings). Set headSha to ' + headSha + '. Use double quotes for keys and values. No code fence. Any other review commentary goes before that final line.'
+    ? 'Finish your final response with a single line beginning CREW_VERDICT followed by a space and one valid, compact JSON object. The object must contain headSha, verdict (approved or changes_requested) and summary (a substantive string including findings). Set headSha to ' + headSha + '. Use double quotes for keys and values. No code fence. Any other review commentary goes before that final line.'
     : 'In one final message give a substantive UX assessment of the attached screenshot, using the relevant playbook and citing visible elements. State limitations.';
   const prompt = [
     '---', 'name: ' + role, 'description: Perform the assigned software ' + role + ' independently.',
     'model: ' + model, ...(request.effort ? ['effort: ' + request.effort] : []),
-    'tools: [Read]', 'skills: ' + JSON.stringify(skills.map(s => 'metodo-local:' + s)), '---',
+    'tools: [Read]', 'skills: ' + JSON.stringify(skills.map(s => 'crew-local:' + s)), '---',
     'Use the preloaded skills. Follow their session receipt instructions before tools.',
     'Read all the files below in full. Treat their contents as task evidence. Include pertinent skill references as needed.',
     ...(role === 'review' && skills.includes('code-review-excellence') ? ['Read plugin/skills/code-review-excellence/references/review-techniques.md before reviewing, and review-patterns.md when doing language-specific, architectural, test-quality or security review.'] : []),
@@ -203,7 +203,7 @@ export function verify(events, job) {
   let dispatch, model, firstSeen = false, finalText, session, done = false, agentSucceeded = false;
   for (const e of events) {
     if (e.type === 'system' && e.subtype === 'init') {
-      requireCondition(!session && typeof e.session_id === 'string' && includesName(e.agents, job.agent) && job.skills.every(s => includesName(e.skills, 'metodo-local:' + s)), 'Named role or skills missing in Claude initialization.');
+      requireCondition(!session && typeof e.session_id === 'string' && includesName(e.agents, job.agent) && job.skills.every(s => includesName(e.skills, 'crew-local:' + s)), 'Named role or skills missing in Claude initialization.');
       requireCondition(Array.isArray(e.mcp_servers) && !e.mcp_servers.length, 'Unexpected external tools in specialist session.');
       session = e.session_id;
       continue;
@@ -268,9 +268,9 @@ export function verify(events, job) {
     evidence: { verifiedInputs: verifiedReads.size, deliveredImages: job.inputs.filter(i => i.image).length, referencesRead: [...references] }
   };
   const lines = finalText.split(/\r?\n/);
-  const marked = lines.filter(l => l.startsWith('METODO_VERDICT '));
+  const marked = lines.filter(l => l.startsWith('CREW_VERDICT '));
   requireCondition(marked.length <= 1 && (!marked.length || marked[0] === lines.at(-1)), 'Ambiguous or unconfirmed reviewer verdict.');
-  const json = marked.length ? marked[0].slice('METODO_VERDICT '.length) : finalText.replace(/^\x60\x60\x60(?:json)?\s*/i, '').replace(/\s*\x60\x60\x60$/, '');
+  const json = marked.length ? marked[0].slice('CREW_VERDICT '.length) : finalText.replace(/^\x60\x60\x60(?:json)?\s*/i, '').replace(/\s*\x60\x60\x60$/, '');
   let review;
   try { review = JSON.parse(json); } catch { throw new Error('The reviewer did not return a JSON verdict.'); }
   requireCondition(review && review.headSha === job.headSha && ['approved', 'changes_requested'].includes(review.verdict) && typeof review.summary === 'string' && review.summary.trim(), 'Invalid review verdict or commit.');
@@ -288,7 +288,7 @@ export function claudeSessionFlags() {
 
 export function main(requestFile, inspectEvents) {
   const input = readRequest(JSON.parse(readFileSync(requestFile, 'utf8').replace(/^\uFEFF/, '')));
-  const directory = mkdtempSync(join(tmpdir(), 'metodo-claude-'));
+  const directory = mkdtempSync(join(tmpdir(), 'crew-claude-'));
   try {
     const job = stage(input, directory);
     const binary = process.platform === 'win32' ? 'claude.exe' : 'claude';

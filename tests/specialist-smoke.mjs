@@ -13,7 +13,7 @@ if (!['--live', '--corrected-only', '--read-boundary', '--ux', '--setup-token'].
   console.error('Usage: node tests/specialist-smoke.mjs --live (two reviews), --corrected-only (one review), --read-boundary (one synthetic read test), or --ux <synthetic-png> (sends that PNG to Claude).');
   process.exit(2);
 }
-const cwd = mkdtempSync(join(tmpdir(), 'metodo-review-smoke-'));
+const cwd = mkdtempSync(join(tmpdir(), 'crew-review-smoke-'));
 try {
   if (process.argv[2] === '--setup-token') {
     const binary = process.platform === 'win32' ? 'claude.exe' : 'claude';
@@ -43,7 +43,7 @@ try {
     console.log(JSON.stringify({ readAttempted: true, deniedByRuntime: true, outsideMarkerVisible: false }));
   } else if (process.argv[2] === '--ux') {
     assert.ok(process.argv[3]?.toLowerCase().endsWith('.png'), 'Supply the path to a synthetic PNG authorized for transmission to Claude.');
-    const root = process.env.METODO_SMOKE_PLUGIN ?? fileURLToPath(new URL('../plugins/build-with-the-crew/', import.meta.url));
+    const root = process.env.CREW_SMOKE_PLUGIN ?? fileURLToPath(new URL('../plugins/build-with-the-crew/', import.meta.url));
     const method = join(root, 'scripts', 'method.mjs');
     const options = { cwd, encoding: 'utf8', windowsHide: true, timeout: 16 * 60 * 1000, maxBuffer: 2 * 1024 * 1024 };
     execFileSync('git', ['init', '-q'], options);
@@ -54,15 +54,15 @@ try {
     copyFileSync(resolve(process.argv[3]), join(cwd, 'pickup.png'));
     const launcherRoot = join(root, 'role-skills', 'impeccable', 'scripts');
     const context = process.platform === 'win32'
-      ? execFileSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', '& $env:METODO_SMOKE_CONTEXT context --target pickup.png; exit $LASTEXITCODE'], {
-        ...options, env: { ...process.env, METODO_SMOKE_CONTEXT: join(launcherRoot, 'impeccable.cmd') }
+      ? execFileSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', '& $env:CREW_SMOKE_CONTEXT context --target pickup.png; exit $LASTEXITCODE'], {
+        ...options, env: { ...process.env, CREW_SMOKE_CONTEXT: join(launcherRoot, 'impeccable.cmd') }
       })
       : execFileSync(join(launcherRoot, 'impeccable'), ['context', '--target', 'pickup.png'], options);
     assert.ok(context.trim(), 'Impeccable returned empty project context.');
     const input = join(cwd, 'request.json');
     writeFileSync(input, JSON.stringify({ brief: 'Review the attached screen in English using Impeccable design assessment A. Prioritize improvements and cite visible evidence.', context: context.replaceAll(cwd, '<synthetic-project>'), files: ['pickup.png'] }));
     const response = JSON.parse(execFileSync(process.execPath, [method, 'ux', input], options));
-    console.log(JSON.stringify({ plugin: process.env.METODO_SMOKE_PLUGIN ? 'selected copy' : 'source', launcherExitCode: 0, ...response }));
+    console.log(JSON.stringify({ plugin: process.env.CREW_SMOKE_PLUGIN ? 'selected copy' : 'source', launcherExitCode: 0, ...response }));
     assert.equal(response.role, 'ux');
     assert.deepEqual(response.skills, ['impeccable']);
     assert.equal(response.evidence.deliveredImages, 1);
@@ -92,7 +92,7 @@ try {
       assert.equal(testsPassed, expected === 'approved');
       const path = join(cwd, 'request.json');
       writeFileSync(path, JSON.stringify({ role: 'review', effort: 'high', brief: 'Implement magnitude(x) for a finite JavaScript number x, including negative inputs. Return its absolute value. Give a verdict based on this acceptance criterion.', context: 'The local regression suite on this commit ' + (testsPassed ? 'passed.' : 'failed.'), cwd, baseSha, headSha }));
-      const review = main(path, process.env.METODO_SMOKE_TRACE === '1' ? events => {
+      const review = main(path, process.env.CREW_SMOKE_TRACE === '1' ? events => {
         // Strictly synthetic fixture. Do not enable payload logging in the installed CLI.
         for (const event of events.filter(e => e.parent_tool_use_id && e.type === 'user')) {
           for (const block of event.message?.content ?? []) {

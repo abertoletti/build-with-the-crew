@@ -19,7 +19,7 @@ if ([IO.Path]::GetExtension($codex) -in '.cmd', '.ps1') {
     $launcherArgs = @($entry)
 }
 $tempRoot = (Resolve-Path -LiteralPath ([IO.Path]::GetTempPath())).Path
-$trial = Join-Path $tempRoot ('metodo-install-' + [guid]::NewGuid().ToString('N'))
+$trial = Join-Path $tempRoot ('crew-install-' + [guid]::NewGuid().ToString('N'))
 $catalog = Join-Path $trial 'marketplace'
 $profilePath = Join-Path $trial 'codex-profile'
 $project = Join-Path $trial 'sample-project'
@@ -82,7 +82,7 @@ function Test-SkillDiscovery([switch]$RunUx) {
     $process = Start-TrialCodex @('app-server', '--stdio')
     try {
         $stderr = $process.StandardError.ReadToEndAsync()
-        $process.StandardInput.WriteLine('{"id":1,"method":"initialize","params":{"clientInfo":{"name":"metodo_test","version":"0.1.0"}}}')
+        $process.StandardInput.WriteLine('{"id":1,"method":"initialize","params":{"clientInfo":{"name":"crew_install_test","version":"0.1.0"}}}')
         $null = Read-Reply $process 1
         $process.StandardInput.WriteLine('{"method":"initialized"}')
         $request = @{ id = 2; method = 'skills/list'; params = @{ cwds = @($project); forceReload = $true } }
@@ -117,13 +117,13 @@ function Test-SkillDiscovery([switch]$RunUx) {
         $process.Dispose()
     }
     if ($RunUx -and $uxInput) {
-        $previous = $env:METODO_SMOKE_PLUGIN
+        $previous = $env:CREW_SMOKE_PLUGIN
         try {
-            $env:METODO_SMOKE_PLUGIN = $installedRoot
+            $env:CREW_SMOKE_PLUGIN = $installedRoot
             & node (Join-Path $PSScriptRoot 'specialist-smoke.mjs') --ux $uxInput
             if ($LASTEXITCODE -ne 0) { throw "Installed plugin UX smoke failed ($LASTEXITCODE)" }
         } finally {
-            $env:METODO_SMOKE_PLUGIN = $previous
+            $env:CREW_SMOKE_PLUGIN = $previous
         }
     }
 }
@@ -164,7 +164,7 @@ try {
     if (Test-Path -LiteralPath $trial) {
         $owned = (Resolve-Path -LiteralPath $trial).Path
         if ((Split-Path -Parent $owned) -ne $tempRoot.TrimEnd([IO.Path]::DirectorySeparatorChar) -or
-            (Split-Path -Leaf $owned) -notmatch '^metodo-install-[0-9a-f]{32}$') { throw "Unexpected temporary path: $owned" }
+            (Split-Path -Leaf $owned) -notmatch '^crew-install-[0-9a-f]{32}$') { throw "Unexpected temporary path: $owned" }
         # Windows can hold directory handles briefly after the server exits.
         $deadline = [datetime]::UtcNow.AddSeconds(15)
         do {

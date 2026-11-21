@@ -1,5 +1,5 @@
 ---
-name: metodo-task
+name: crew-task
 description: Carry an assigned development task through analysis, implementation, independent review, QA, corrections and pull request integration inside its own Git worktree.
 ---
 

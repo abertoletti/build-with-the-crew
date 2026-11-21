@@ -59,7 +59,7 @@ test('the marketplace locates the installable plugin and both workflow skills', 
   assert.match(manifest.version, /^\d+\.\d+\.\d+/);
   const skills = resolve(installed, manifest.skills);
   assert.equal(skills, join(installed, 'skills'));
-  for (const name of ['metodo-coordinator', 'metodo-task']) {
+  for (const name of ['crew-coordinator', 'crew-task']) {
     const body = readFileSync(join(skills, name, 'SKILL.md'), 'utf8');
     assert.match(body, new RegExp('^name: ' + name + '\\r?$', 'm'));
     for (const [, ref] of body.matchAll(/\[[^\]]+\]\((references\/[^)#\s]+)(?:#[^)]*)?\)/g)) {

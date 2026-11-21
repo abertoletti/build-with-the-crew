@@ -24,8 +24,8 @@ export function validModel(runtime, model) {
 
 function commandFor(runtime) {
   if (runtime === 'claude-code') return { command: process.execPath, args: [claudeScript] };
-  const path = process.env.METODO_ADAPTERS_FILE;
-  if (!path || !isAbsolute(path)) throw new Error('Custom runtimes need an absolute METODO_ADAPTERS_FILE.');
+  const path = process.env.CREW_ADAPTERS_FILE ?? process.env.METODO_ADAPTERS_FILE;
+  if (!path || !isAbsolute(path)) throw new Error('Custom runtimes need an absolute CREW_ADAPTERS_FILE.');
   const registry = JSON.parse(readFileSync(path, 'utf8').replace(/^\uFEFF/, ''));
   if (registry?.version !== 1 || !registry.adapters || typeof registry.adapters !== 'object' ||
       Array.isArray(registry.adapters)) throw new Error('Invalid specialist adapter registry.');
@@ -112,7 +112,7 @@ export function invokeSpecialist(request, runtime = 'claude-code') {
       throw new Error('Missing packaged skill: ' + skill);
     }
   }
-  const directory = mkdtempSync(join(tmpdir(), 'metodo-runtime-'));
+  const directory = mkdtempSync(join(tmpdir(), 'crew-runtime-'));
   try {
     const payload = runtime === 'claude-code' ? input : stageExternal(input, runtime, directory);
     const requestFile = join(directory, 'request.json');
