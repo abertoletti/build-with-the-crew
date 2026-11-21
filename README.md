@@ -109,3 +109,5 @@ Live tests use your Claude subscription quota.
 ## License
 
 Original code is MIT. Bundled skills retain their upstream licenses. [License](LICENSE) | [Third-party notices](plugins/build-with-the-crew/role-skills/_licenses/)
+
+[Privacy policy](PRIVACY.md)
