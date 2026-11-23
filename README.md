@@ -46,7 +46,7 @@ Ask the coordinator to change your crew in plain language, or edit the `roles` s
 <details>
 <summary>See an example configuration for all eight roles</summary>
 
-Merge this `roles` object into your existing project configuration. A `skills` list replaces the defaults for that role. Omit a field to keep its default. Choose skill names from the [bundled catalog](plugins/build-with-the-crew/role-skills/).
+Merge this `roles` object into your existing project configuration. A `skills` list replaces the defaults for that role. Omit a field to keep its default. Use names from the bundled catalog, or use `project:<name>` for a skill checked into your repo. Add `optionalSkills` for skills the role can work without. [Skill configuration](docs/configuration.md#skills)
 
 ```json
 {
@@ -80,6 +80,8 @@ codex plugin add build-with-the-crew@crew-tools
 
 Codex installs both workflow skills, the role skills and the supporting scripts together.
 
+For a reusable Codex Cloud environment, prepare the same version of the bundle and check it from the task's checkout. [Cloud setup](docs/configuration.md#cloud-setup)
+
 ### Authenticate Claude
 
 For interactive work, run `claude auth login`. For unattended work, run `claude setup-token` in your own terminal and supply the resulting secret as `CLAUDE_CODE_OAUTH_TOKEN` to the process launching Codex. Restart Codex if its environment changed. Keep the token in your secret manager. [Claude Code authentication](https://code.claude.com/docs/en/authentication#generate-a-long-lived-token)
@@ -91,6 +93,18 @@ Open a fresh Codex Desktop chat in your Git repository and ask:
 > Configure Build with the Crew for pull requests to main. Use this project's test commands and CI checks.
 
 The coordinator creates `.build-with-the-crew/config.json` in your project. Commit it to the remote base branch before assigning the first task. If you already configured this project with 0.2.0, move `.agentic-method/config.json` to the new path. For automatic merge, set `integration` to `merge` and name at least one required CI check. [Configuration and recovery](docs/configuration.md)
+
+## Local dashboard
+
+From a clone of this repository, pass one or more local Git repository paths:
+
+```sh
+npm run dashboard -- /path/to/project /path/to/another-project
+```
+
+Open the full localhost link printed in your terminal. The dashboard refreshes every few seconds and shows task checkpoints, recorded pull request reviews and activity history. Older tasks appear with the data they recorded. Reviews without a recorded task association appear under **Unlinked PRs**. Stop the dashboard with Ctrl+C. It reads local journals and makes no calls to GitHub or model providers.
+
+You can also run `node <installed-plugin>/scripts/dashboard.mjs` from a project. Pass additional repository paths to watch them together. The dashboard shows recorded task stages and subagent activity, which can lag behind the host. [Dashboard data](docs/configuration.md#dashboard-data)
 
 ## Test
 

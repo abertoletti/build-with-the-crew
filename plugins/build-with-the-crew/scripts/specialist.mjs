@@ -286,11 +286,11 @@ export function claudeSessionFlags() {
   ];
 }
 
-export function main(requestFile, inspectEvents) {
+export function main(requestFile, inspectEvents, skillRoot) {
   const input = readRequest(JSON.parse(readFileSync(requestFile, 'utf8').replace(/^\uFEFF/, '')));
   const directory = mkdtempSync(join(tmpdir(), 'crew-claude-'));
   try {
-    const job = stage(input, directory);
+    const job = stage(input, directory, skillRoot);
     const binary = process.platform === 'win32' ? 'claude.exe' : 'claude';
     const endpoint = process.env.ANTHROPIC_BASE_URL;
     requireCondition(!endpoint || /^https:\/\/api\.anthropic\.com\/?$/i.test(endpoint), 'Custom Anthropic endpoints require a separately configured provider adapter.');
@@ -313,8 +313,8 @@ export function main(requestFile, inspectEvents) {
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
-    requireCondition(process.argv.length === 3, 'Usage: node specialist.mjs request.json');
-    console.log(JSON.stringify(main(process.argv[2])));
+    requireCondition(process.argv.length === 3 || process.argv.length === 4, 'Usage: node specialist.mjs request.json [skill-root]');
+    console.log(JSON.stringify(main(process.argv[2], undefined, process.argv[3])));
   } catch (error) {
     // A parser error can quote an input payload. Never echo it onto the diagnostic channel.
     console.error(error instanceof SyntaxError ? 'Malformed JSON input or Claude stream.' : error.message);

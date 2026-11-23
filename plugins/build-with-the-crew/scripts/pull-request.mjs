@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { appendRecord, latestRecord, loadConfig, requireRepo, storageDir } from './project.mjs';
 import { invokeSpecialist } from './runtime.mjs';
 import { ClaudeAuthError } from './claude-auth.mjs';
+import { requireRoleSkills, SkillUnavailable } from './role-skills.mjs';
 
 const oid = /^[a-f0-9]{40}$/;
 
@@ -85,7 +86,6 @@ export function managePull(action, repository, number, briefFile, {
   const config = configAt(cwd, pr.base.sha);
   if (config.repository.toLowerCase() !== repository.toLowerCase() || config.baseBranch !== pr.base.ref) throw new Error('PR does not match project policy.');
   const coordinates = { repository, number, baseSha: pr.base.sha, headSha: pr.head.sha };
-  const role = config.roles.review;
 
   if (action === 'review-status') {
     if (!last) return { ...coordinates, state: 'unreviewed', revision: 0 };
@@ -95,6 +95,9 @@ export function managePull(action, repository, number, briefFile, {
     if (last?.state !== 'reviewing' || String(revision) !== briefFile) throw new Error('Expected the revision of the interrupted review.');
     return appendRecord(dir, revision, { ...coordinates, state: 'interrupted', round: last.round });
   }
+  const configured = config.roles.review;
+  const skillReport = requireRoleSkills(cwd, 'review', configured, pr.base.sha);
+  const role = { ...configured, skills: skillReport.available.map(skill => skill.name) };
   if (action === 'review') {
     const brief = readFileSync(briefFile, 'utf8').trim();
     if (!brief || Buffer.byteLength(brief) > 65536) throw new Error('Expected a review brief of 1 to 65536 bytes.');
@@ -109,15 +112,17 @@ export function managePull(action, repository, number, briefFile, {
     if (last?.state === 'reviewing' && revisionMatches(pr, last)) {
       throw new Error('Review is already in progress. If its process has stopped, recover this attempt before retrying.');
     }
-    const attempt = appendRecord(dir, revision, { ...coordinates, state: 'reviewing', briefSha256, round });
+    const attempt = appendRecord(dir, revision, { ...coordinates, state: 'reviewing', briefSha256, round,
+      reviewer: { runtime: role.runtime, model: role.model } });
     let receipt;
     try {
       receipt = review({ role: 'review', cwd, brief, baseSha: pr.base.sha, headSha: pr.head.sha,
-        skills: role.skills, model: role.model, effort: role.effort }, role.runtime);
+        skills: role.skills, model: role.model, effort: role.effort }, role.runtime, skillReport);
       validateReview(receipt, pr, role);
     } catch (error) {
       const needsLogin = error instanceof ClaudeAuthError;
-      appendRecord(dir, attempt.revision, { ...coordinates, state: needsLogin ? 'awaiting-auth' : 'failed', round: needsLogin ? round - 1 : round });
+      const needsSkill = error instanceof SkillUnavailable;
+      appendRecord(dir, attempt.revision, { ...coordinates, state: needsLogin ? 'awaiting-auth' : 'failed', round: needsLogin || needsSkill ? round - 1 : round });
       throw error;
     }
     appendRecord(dir, attempt.revision, { ...coordinates, state: receipt.verdict, briefSha256, round, receipt });

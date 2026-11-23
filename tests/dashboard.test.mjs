@@ -1,0 +1,71 @@
+import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { request } from 'node:http';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { once } from 'node:events';
+import { test } from 'node:test';
+import { recordAgentEvent } from '../plugins/build-with-the-crew/scripts/agent-events.mjs';
+import { createDashboard, dashboardProjects } from '../plugins/build-with-the-crew/scripts/dashboard.mjs';
+import { appendRecord, checkpoint, initProject, storageDir } from '../plugins/build-with-the-crew/scripts/project.mjs';
+
+test('the localhost dashboard reads old and new checkpoints and refreshes without exposing journal text', async t => {
+  const directory = mkdtempSync(join(tmpdir(), 'crew-dashboard-test-'));
+  t.after(() => rmSync(directory, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }));
+  execFileSync('git', ['init', '-q', directory]);
+  initProject('example/widgets', 'main', directory);
+  const note = join(directory, 'note.txt');
+  const metadata = join(directory, 'task.json');
+  writeFileSync(note, 'Private instruction for the agent.');
+  writeFileSync(metadata, JSON.stringify({ title: 'Add CSV export', branch: 'feat/export', prNumber: 12 }));
+  checkpoint(directory, 'csv-export', 0, 'assigned', note, metadata);
+  checkpoint(directory, 'csv-export', 1, 'review', note);
+  checkpoint(directory, 'date-filter', 0, 'assigned', note);
+  checkpoint(directory, 'date-filter', 1, 'waiting-human', note);
+  recordAgentEvent(directory, 'csv-export', 'qa', 'agent-running', 'Website QA');
+  const review = join(storageDir(directory), 'reviews/r-example/r-widgets/pr-12');
+  appendRecord(review, 0, { state: 'reviewing', round: 1, reviewer: { runtime: 'claude-code', model: 'opus' } });
+  const projects = dashboardProjects([directory, directory]);
+  assert.equal(projects.length, 1);
+
+  const { server, token } = createDashboard(projects);
+  server.listen(0, '127.0.0.1');
+  await once(server, 'listening');
+  t.after(() => new Promise(resolve => server.close(resolve)));
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const auth = { Authorization: `Bearer ${token}` };
+  assert.equal((await fetch(base + '/')).status, 200);
+  assert.equal((await fetch(base + '/dashboard.js')).status, 200);
+  assert.equal((await fetch(base + '/api/snapshot')).status, 401);
+  assert.equal((await fetch(base + '/api/snapshot', { method: 'POST', headers: auth })).status, 405);
+  assert.equal((await fetch(base + '/api/snapshot', { headers: { ...auth, Origin: 'https://example.org' } })).status, 403);
+  const rebinding = await new Promise((resolve, reject) => {
+    request(base + '/api/snapshot', { headers: { ...auth, Host: 'other.example' } }, response => {
+      response.resume();
+      resolve(response.statusCode);
+    }).on('error', reject).end();
+  });
+  assert.equal(rebinding, 403);
+
+  const read = () => fetch(base + '/api/snapshot', { headers: auth }).then(response => response.text());
+  const first = await read();
+  assert.doesNotMatch(first, /Private instruction/);
+  const project = JSON.parse(first).projects[0];
+  assert.equal(project.tasks.find(task => task.id === 'date-filter').stage, 'waiting-human');
+  const csv = project.tasks.find(task => task.id === 'csv-export');
+  assert.equal(csv.prNumber, 12);
+  assert.equal(csv.branch, 'feat/export');
+  assert.equal(csv.agents[0].state, 'agent-running');
+  assert.equal(csv.agents[0].label, 'Website QA');
+  assert.equal(project.pullRequests[0].model, 'opus');
+  assert.equal(project.pullRequests[0].state, 'reviewing');
+  appendRecord(review, 1, { state: 'changes_requested', round: 1, receipt: { model: 'opus', summary: 'Private code review.' } });
+  recordAgentEvent(directory, 'csv-export', 'qa', 'agent-done', 'Website QA');
+  const updated = await read();
+  assert.doesNotMatch(updated, /Private code review/);
+  assert.deepEqual(JSON.parse(updated).projects[0].pullRequests[0].events.map(event => event.state), ['reviewing', 'changes_requested']);
+  const completed = JSON.parse(updated).projects[0].tasks.find(task => task.id === 'csv-export');
+  assert.equal(completed.agents[0].state, 'agent-done');
+  assert.deepEqual(completed.events.filter(event => event.type === 'agent').map(event => event.state), ['agent-running', 'agent-done']);
+});

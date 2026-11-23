@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { promisify } from 'node:util';
 import { configurationPath, defaults, loadConfig, pluginRoot, resolveConfig, storageDir } from '../plugins/build-with-the-crew/scripts/project.mjs';
+import { requireRoleSkills, stageRoleSkills } from '../plugins/build-with-the-crew/scripts/role-skills.mjs';
 
 const execute = promisify(execFile);
 const command = join(pluginRoot, 'scripts', 'method.mjs');
@@ -44,14 +45,64 @@ test('init creates a valid portable config and preserves an existing edited file
   await assert.rejects(cli(main, 'init', 'example/test'));
 });
 
-test('project validation rejects unknown skills, invalid branches, implicit merge and duplicate checks', () => {
+test('project validation rejects malformed and duplicate skills, invalid branches, implicit merge and duplicate checks', () => {
   const base = defaults('example/test', 'main');
   for (const override of [
-    { roles: { review: { skills: ['missing-skill'] } } },
+    { roles: { review: { skills: ['project:../outside'] } } },
+    { roles: { review: { skills: ['code-review-excellence'], optionalSkills: ['project:code-review-excellence'] } } },
     { baseBranch: '../outside' }, { integration: 'merge' }, { maxReviewRounds: 0 },
     { requiredChecks: [{ type: 'status', name: 'tests' }, { type: 'status', name: 'TESTS' }] },
     { requiredChecks: [{ type: 'status', name: 'tests', appId: 42 }] },
   ]) assert.throws(() => resolveConfig({ ...base, ...override }));
+});
+
+test('doctor detects missing required and optional skills in a fresh checkout and resolves installed project skills', async t => {
+  const { main, cli } = repository(t);
+  await cli(main, 'init', 'example/test', 'main');
+  const first = await cli(main, 'doctor');
+  assert.equal(first.roles.length, 6);
+  assert.ok(first.roles.every(role => role.status === 'ready'));
+  const config = { ...defaults('example/test', 'main'), roles: {
+    developer: { skills: ['test-driven-development', 'project:release-checklist'], optionalSkills: ['project:performance-tips'] },
+  } };
+  writeFileSync(join(main, configurationPath), JSON.stringify(config));
+  await assert.rejects(cli(main, 'doctor', 'developer'), error => {
+    const [developer] = JSON.parse(error.stdout).roles;
+    assert.equal(error.code, 1);
+    assert.equal(developer.status, 'blocked');
+    assert.deepEqual(developer.problems.map(p => [p.skill, p.required]), [
+      ['project:release-checklist', true], ['project:performance-tips', false],
+    ]);
+    return true;
+  });
+  assert.equal((await cli(main, 'doctor', 'qa')).roles[0].status, 'ready');
+  const directory = join(main, '.agents', 'skills', 'release-checklist');
+  mkdirSync(directory, { recursive: true });
+  writeFileSync(join(directory, 'SKILL.md'), '---\nname: release-checklist\n---\nCheck the release.\n');
+  const [developer] = (await cli(main, 'doctor', 'developer')).roles;
+  assert.equal(developer.status, 'warning');
+  assert.deepEqual(developer.available.map(skill => skill.name), ['test-driven-development', 'release-checklist']);
+});
+
+test('project review skills and resources are staged from the trusted PR base', t => {
+  const { dir, main, git } = repository(t);
+  const skill = join(main, '.agents', 'skills', 'trusted-review');
+  mkdirSync(join(skill, 'references'), { recursive: true });
+  const body = '---\nname: trusted-review\n---\nRead the project standard.\n';
+  writeFileSync(join(skill, 'SKILL.md'), body);
+  writeFileSync(join(skill, 'references', 'standard.md'), 'Base standard.');
+  git(main, 'add', '.agents/skills/trusted-review');
+  git(main, '-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', '-c', 'commit.gpgsign=false', 'commit', '-qm', 'trusted skill');
+  const base = git(main, 'rev-parse', 'HEAD').trim();
+  writeFileSync(join(skill, 'SKILL.md'), 'Proposed PR content.');
+  writeFileSync(join(skill, 'references', 'standard.md'), 'Proposed PR changes.');
+  const role = { skills: ['project:trusted-review'] };
+  const report = requireRoleSkills(main, 'review', role, base);
+  const destination = join(dir, 'staged');
+  stageRoleSkills(main, report.available, destination);
+  assert.equal(readFileSync(join(destination, 'trusted-review', 'SKILL.md'), 'utf8'), body);
+  assert.equal(readFileSync(join(destination, 'trusted-review', 'references', 'standard.md'), 'utf8'), 'Base standard.');
+  assert.throws(() => requireRoleSkills(main, 'review', { skills: ['project:uncommitted-skill'] }, base), /missing from the trusted base/);
 });
 
 test('role efforts are independent, optional and validated for the target runtime', () => {

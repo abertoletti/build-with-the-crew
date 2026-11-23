@@ -6,8 +6,8 @@ import { tmpdir } from 'node:os';
 import { basename, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isClaudeModel, readRequest, readReviewDiff, requireCurrentHead } from './specialist.mjs';
+import { bundledSkills, stageRoleSkills } from './role-skills.mjs';
 
-const skillRoot = fileURLToPath(new URL('../role-skills/', import.meta.url));
 const claudeScript = fileURLToPath(new URL('specialist.mjs', import.meta.url));
 const runtimeName = /^[a-z][a-z0-9-]{0,63}$/;
 
@@ -42,7 +42,7 @@ function commandFor(runtime) {
   return { command, args: entry.args };
 }
 
-function stageExternal(input, runtime, directory) {
+function stageExternal(input, runtime, directory, skillRoot) {
   const workspace = join(directory, 'inputs');
   mkdirSync(workspace);
   const files = input.files.map((name, index) => {
@@ -103,21 +103,26 @@ export function receiptFor(result, input, runtime) {
   return { ...receipt, baseSha: input.baseSha, headSha: input.headSha, diffSha256: result.diffSha256, verdict: result.verdict };
 }
 
-export function invokeSpecialist(request, runtime = 'claude-code') {
+export function invokeSpecialist(request, runtime = 'claude-code', skillReport) {
   validateRuntimeName(runtime);
   const registration = commandFor(runtime);
   const input = readRequest(request, model => validModel(runtime, model), runtime);
+  const custom = skillReport?.available.some(skill => skill.source === 'project');
   for (const skill of input.skills) {
-    if (!lstatSync(join(skillRoot, skill, 'SKILL.md'), { throwIfNoEntry: false })?.isFile()) {
+    if (!custom && !lstatSync(join(bundledSkills, skill, 'SKILL.md'), { throwIfNoEntry: false })?.isFile()) {
       throw new Error('Missing packaged skill: ' + skill);
     }
   }
   const directory = mkdtempSync(join(tmpdir(), 'crew-runtime-'));
   try {
-    const payload = runtime === 'claude-code' ? input : stageExternal(input, runtime, directory);
+    const skillRoot = custom ? join(directory, 'role-skills') : bundledSkills;
+    if (custom) stageRoleSkills(input.cwd, skillReport.available, skillRoot);
+    const payload = runtime === 'claude-code' ? input : stageExternal(input, runtime, directory, skillRoot);
     const requestFile = join(directory, 'request.json');
     writeFileSync(requestFile, JSON.stringify(payload), { flag: 'wx', mode: 0o600 });
-    const child = spawnSync(registration.command, [...registration.args, requestFile], {
+    const args = [...registration.args, requestFile];
+    if (runtime === 'claude-code' && custom) args.push(skillRoot);
+    const child = spawnSync(registration.command, args, {
       cwd: directory, shell: false, windowsHide: true, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
       maxBuffer: 8 * 1024 * 1024, timeout: 16 * 60 * 1000,
     });
@@ -131,6 +136,7 @@ export function invokeSpecialist(request, runtime = 'claude-code') {
     let result;
     try { result = JSON.parse(child.stdout); } catch { throw new Error('Expected one JSON receipt from the specialist adapter.'); }
     const receipt = receiptFor(result, payload, runtime);
+    if (skillReport?.problems.length) receipt.skillWarnings = skillReport.problems;
     if (input.role === 'review' && runtime !== 'claude-code') requireCurrentHead(input.cwd, input.headSha);
     return receipt;
   } finally {

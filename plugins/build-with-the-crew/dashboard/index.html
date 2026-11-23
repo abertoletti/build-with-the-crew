@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Crew Dashboard · Build with the Crew</title>
+  <link rel="stylesheet" href="/dashboard.css">
+  <script type="module" src="/dashboard.js"></script>
+</head>
+<body>
+  <a class="skip-link" id="skip-link" href="#dashboard">Skip to dashboard</a>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="crew-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v4m0 0-6 6m6-6 6 6"/><circle cx="12" cy="5" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="19" cy="18" r="2"/></svg></span>
+        Build with the Crew
+      </div>
+      <div class="topbar-controls">
+        <span class="connection" id="connection" role="status">Connecting…</span>
+        <button class="motion-control" id="motion" type="button" aria-pressed="false">Pause motion</button>
+      </div>
+    </div>
+  </header>
+  <main id="dashboard" tabindex="-1">
+    <div class="heading">
+      <div><h1>Crew Dashboard</h1><p id="project-count"></p></div>
+      <label class="project-picker" for="project">Repository <select id="project"><option value="all">All repositories</option></select></label>
+    </div>
+    <section class="totals" aria-label="Session summary">
+      <div><i class="signal" aria-hidden="true"></i><span>Open tasks</span><strong id="open-count">—</strong></div>
+      <div><i class="signal attention" aria-hidden="true"></i><span>Needs your input</span><strong id="waiting-count">—</strong></div>
+      <div><i class="signal done" aria-hidden="true"></i><span>Merged</span><strong id="merged-count">—</strong></div>
+    </section>
+    <p id="warning" class="warning" role="status" hidden></p>
+    <div class="board">
+      <section class="panel list-panel" aria-labelledby="sessions-title">
+        <div class="panel-head"><h2 id="sessions-title">Sessions</h2><span id="session-count"></span></div>
+        <div class="entries" id="sessions"></div>
+        <div id="unlinked" hidden><div class="panel-head divider"><h2>Unlinked PRs</h2></div><div class="entries" id="reviews"></div></div>
+      </section>
+      <section class="panel detail-panel" aria-labelledby="detail-title">
+        <div class="panel-head"><div><h2 id="detail-title">Session details</h2><p id="detail-state" class="panel-caption"></p></div><a id="pr-link" class="pr-link" target="_blank" rel="noopener noreferrer" hidden></a></div>
+        <div id="detail" class="detail"></div>
+      </section>
+      <section class="panel activity-panel" aria-labelledby="activity-title">
+        <div class="panel-head"><div><h2 id="activity-title">Activity</h2><p class="panel-caption" id="activity-caption"></p></div></div>
+        <div id="activity" class="activity"></div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

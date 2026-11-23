@@ -4,6 +4,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { validateEffort } from './specialist.mjs';
 import { validModel, validateRuntimeName } from './runtime.mjs';
+import { skillSelection } from './role-skills.mjs';
 
 export const configurationPath = '.build-with-the-crew/config.json';
 export const pluginRoot = fileURLToPath(new URL('../', import.meta.url));
@@ -92,14 +93,16 @@ export function resolveConfig(raw) {
   for (const [name, skills] of Object.entries(roleDefaults)) {
     const external = name === 'ux' || name === 'review';
     const custom = Object.hasOwn(config.roles, name) ? config.roles[name] : {};
-    object(custom, name, external ? ['skills', 'model', 'runtime', 'effort'] : ['skills', 'effort']);
+    object(custom, name, external ? ['skills', 'optionalSkills', 'model', 'runtime', 'effort'] : ['skills', 'optionalSkills', 'effort']);
     const selected = custom.skills ?? skills;
-    if (!Array.isArray(selected) || !selected.length || new Set(selected).size !== selected.length) throw new Error('Invalid skills for ' + name);
-    for (const skill of selected) {
-      if (typeof skill !== 'string' || !/^[a-z0-9][a-z0-9-]*$/.test(skill) ||
-          !existsSync(join(pluginRoot, 'role-skills', skill, 'SKILL.md'))) throw new Error('Unknown packaged skill: ' + skill);
+    const optional = custom.optionalSkills ?? [];
+    if (!Array.isArray(selected) || !Array.isArray(optional) || !selected.length || selected.length + optional.length > 32) {
+      throw new Error('Invalid skills for ' + name);
     }
+    const names = [...selected, ...optional].map(selection => skillSelection(selection).name);
+    if (new Set(names).size !== names.length) throw new Error('Duplicate skill name for ' + name);
     roles[name] = { skills: selected };
+    if (optional.length) roles[name].optionalSkills = optional;
     if (custom.effort !== undefined) {
       validateEffort(custom.effort, external ? custom.runtime ?? 'claude-code' : 'codex-native');
       roles[name].effort = custom.effort;
@@ -130,7 +133,7 @@ export function initProject(repository, branch, cwd) {
 }
 
 export function loadConfig(cwd, revision) {
-  const raw = revision ? git(['show', revision + ':' + configurationPath], cwd)
+  const raw = revision ? git(['--no-replace-objects', 'show', revision + ':' + configurationPath], cwd)
     : readFileSync(join(rootDir(cwd), configurationPath), 'utf8');
   return resolveConfig(JSON.parse(raw.replace(/^\uFEFF/, '')));
 }
@@ -156,8 +159,9 @@ function readRevision(dir, name) {
   return JSON.parse(readFileSync(join(dir, name, 'record.json'), 'utf8'));
 }
 
-export function history(dir) {
-  return revisions(dir).map(name => readRevision(dir, name));
+export function history(dir, limit) {
+  const names = revisions(dir);
+  return (limit === undefined ? names : names.slice(-limit)).map(name => readRevision(dir, name));
 }
 
 export function latestRecord(dir) {
@@ -190,12 +194,23 @@ export function appendRecord(dir, expectedRevision, fields) {
 
 const stages = ['assigned', 'working', 'waiting-human', 'review', 'testing', 'ready', 'merged', 'cancelled'];
 
-export function checkpoint(cwd, id, expected, stage, notePath) {
+export function checkpoint(cwd, id, expected, stage, notePath, contextPath) {
   const dir = taskDirectory(id, cwd);
   if (!stages.includes(stage) || (expected === 0) !== (stage === 'assigned')) throw new Error('Invalid task stage for this revision.');
   const note = readFileSync(resolve(notePath), 'utf8').trim();
   if (!note || Buffer.byteLength(note) > 65536) throw new Error('Expected a task note of 1 to 65536 bytes.');
   const last = latestRecord(dir);
   if (last && ['merged', 'cancelled'].includes(last.stage)) throw new Error('This task is closed.');
-  return appendRecord(dir, expected, { id, stage, note });
+  const context = contextPath === undefined ? undefined : JSON.parse(readFileSync(resolve(contextPath), 'utf8').replace(/^\uFEFF/, ''));
+  if (context !== undefined) {
+    const fields = ['title', 'threadId', 'hostId', 'branch', 'worktree', 'prNumber'];
+    object(context, 'task context', fields);
+    for (const [key, value] of Object.entries(context)) {
+      if (key === 'prNumber' ? !Number.isSafeInteger(value) || value < 1 : !label(value) || value.length > 512) {
+        throw new Error('Invalid task context field: ' + key);
+      }
+    }
+  }
+  const dashboard = context === undefined ? last?.dashboard : { ...last?.dashboard, ...context };
+  return appendRecord(dir, expected, { id, stage, note, dashboard });
 }
