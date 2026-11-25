@@ -80,6 +80,18 @@ codex plugin add build-with-the-crew@crew-tools
 
 Codex installs both workflow skills, the role skills and the supporting scripts together.
 
+### Start from Skills.sh
+
+Install the [Build with the Crew setup skill](skills/build-with-the-crew/SKILL.md) with the Skills CLI.
+
+```sh
+npx skills add abertoletti/build-with-the-crew --skill build-with-the-crew -a codex
+```
+
+Invoke `$build-with-the-crew` in Codex to install the full plugin and check your project setup.
+
+### Cloud setup
+
 For a reusable Codex Cloud environment, prepare the same version of the bundle and check it from the task's checkout. [Cloud setup](docs/configuration.md#cloud-setup)
 
 ### Authenticate Claude
